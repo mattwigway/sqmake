@@ -16,7 +16,6 @@
 Represents an SQMake Makefile
 """
 
-import networkx as nx
 import yaml
 import os.path
 import sqlalchemy as sq
@@ -31,21 +30,6 @@ LOG = getLogger(__name__)
 class Makefile(object):
     def __init__ (self):
         self.tasks = {}
-
-    def _resolve_dependencies (self):
-        "resolve inter-task dependencies"
-        self._dependencies = nx.DiGraph()
-
-        for task_name, task in self.tasks.items():
-            for ancestor in task.depends_on:
-                if not ancestor in self.tasks:
-                    raise KeyError(f'ancestor task {ancestor} of {task_name} does not exist!')
-                self._dependencies.add_edge(ancestor, task_name)
-
-        if not nx.algorithms.dag.is_directed_acyclic_graph(self._dependencies):
-            # find all cycles
-            cycles = ['>'.join(x) for x in nx.simple_cycles(self._dependencies)]
-            raise CircularDependencyError('Dependency cycles present: ', ', '.join(cycles))
 
     def _add_task (self, task_name, task):
         if task_name in self.tasks:
@@ -112,5 +96,4 @@ class Makefile(object):
                     submakefile = makefile.from_yaml(subfileonly)
                 makefile._include(include['name'], submakefile)
         
-        makefile._resolve_dependencies()
         return makefile
