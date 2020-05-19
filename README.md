@@ -1,8 +1,8 @@
-# SQLMake: data pipeline tool for SQL
+# SQMake: data pipeline tool for SQL
 
-SQLMake is a data pipeline tool for SQL. On many projects I have a bunch of manipulations of data I want to do in an SQL database. In the past I would just have a bunch of SQL scripts, but that becomes unwieldy fast. Since the scripts are often long-running (some queries take hours), I don't want to re-run the entire pipeline when I make a change in one place. Most of the scripts either create new tables, or add columns to existing tables.
+SQMake is a data pipeline tool for SQL. On many projects I have a bunch of manipulations of data I want to do in an SQL database. In the past I would just have a bunch of SQL scripts, but that becomes unwieldy fast. Since the scripts are often long-running (some queries take hours), I don't want to re-run the entire pipeline when I make a change in one place. Most of the scripts either create new tables, or add columns to existing tables.
 
-SQLMake allows you to codify the relationships between those scripts in a meaningful way, and documents what their outputs are. Running the `sqm` command then examines the state of the database, and runs only those tasks needed to bring the database up to date. To reproduce the whole database, just drop the database and run `sqm`---every query will automatically be re-run.
+SQMake allows you to codify the relationships between those scripts in a meaningful way, and documents what their outputs are. Running the `sqm` command then examines the state of the database, and runs only those tasks needed to bring the database up to date. To reproduce the whole database, just drop the database and run `sqm`---every query will automatically be re-run.
 
 ## Configuration
 
