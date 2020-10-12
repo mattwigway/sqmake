@@ -61,7 +61,7 @@ class Makefile(object):
 
         task = self.tasks[task_name]
         # check if task needs to be run
-        if not task.exists(engine, self.schema):
+        if task.metatask() or not task.exists(engine, self.schema):
             LOG.info(f'running task {task_name}')
             LOG.info('checking dependencies')
             for dependency in task.depends_on:
@@ -69,7 +69,7 @@ class Makefile(object):
 
             task.run(engine)
 
-            if not task.exists(engine, self.schema):
+            if not task.metatask() and not task.exists(engine, self.schema):
                 raise TaskFailedError(f'task {task_name} did not produce required outputs')
         else:
             LOG.info(f'{task_name} already complete, skipping')

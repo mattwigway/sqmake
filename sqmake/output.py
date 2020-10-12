@@ -30,14 +30,17 @@ class Output(object):
         if 'file' in o:
             fle = True
 
-        if int(table) + int(column) + int(fle) > 1:
-            raise KeyError('outputs can be one of table, column, or file, not more than one!')
+        if fle and column or fle and table:
+            raise ValueError('file output cannot be combined with table/column output')
+
+        if column and not table:
+            raise ValueError('Column output must have table property!')
+
+        if column and table:
+            return ColumnOutput(o['table'], o['column'])
 
         if table:
             return TableOutput(o['table'])
-
-        if column:
-            return ColumnOutput(o['column']['table'], o['column']['column'])
 
         if fle:
             return FileOutput(o['file'])
@@ -55,8 +58,7 @@ class ColumnOutput(Output):
         self.column = column
 
     def exists (self, metadata):
-        return self.table in metadata.tables
-        return self.column in metadata.tables[self.table].columns
+        return self.table in metadata.tables and self.column in metadata.tables[self.table].columns
 
 class FileOutput(Output):
     def __init__ (self, filename):

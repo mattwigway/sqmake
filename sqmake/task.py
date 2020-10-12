@@ -25,6 +25,9 @@ class Task(object):
         self.outputs = outputs
         self.depends_on = depends_on
 
+    def metatask (self):
+        return len(self.outputs) == 0
+
     def exists (self, engine, schema):
         metadata = sq.MetaData()
         metadata.reflect(bind=engine, schema=schema)
