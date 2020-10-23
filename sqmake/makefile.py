@@ -28,8 +28,9 @@ from .util import withdir
 LOG = getLogger(__name__)
 
 class Makefile(object):
-    def __init__ (self):
+    def __init__ (self, echo=False):
         self.tasks = {}
+        self.echo = echo
 
     def _add_task (self, task_name, task):
         if task_name in self.tasks:
@@ -57,7 +58,7 @@ class Makefile(object):
 
     def run (self, task_name, engine=None):
         if engine is None:
-            engine = sq.create_engine(self.db)
+            engine = sq.create_engine(self.db, echo=self.echo)
 
         task = self.tasks[task_name]
         # check if task needs to be run
@@ -75,17 +76,17 @@ class Makefile(object):
             LOG.info(f'{task_name} already complete, skipping')
 
     @staticmethod
-    def from_yaml (filename):
+    def from_yaml (filename, echo=False):
         with open(filename) as inf:
             parsed = yaml.safe_load(inf)
 
-        makefile = Makefile()
+        makefile = Makefile(echo=echo)
         makefile.db = parsed['db'] if 'db' in parsed else None
         makefile.schema = parsed['schema'] if 'schema' in parsed else None
         if 'tasks' in parsed:
             for task in parsed['tasks']:
                 makefile._add_task(task['name'], Task.from_yaml(task))
-        
+
         dirname = os.path.dirname(filename)
         if 'includes' in parsed:
             for include in parsed['includes']:
@@ -95,5 +96,5 @@ class Makefile(object):
                 with withdir(subdirname):
                     submakefile = makefile.from_yaml(subfileonly)
                 makefile._include(include['name'], submakefile)
-        
+
         return makefile
