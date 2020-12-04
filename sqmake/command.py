@@ -67,7 +67,10 @@ class ShellCommand(Command):
         # TODO how to handle working directory for this process?
         process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        while (retcode := process.poll()) is None:
+        while True:
+            retcode = process.poll()
+            if retcode is not None:
+                break
             try:
                 stdout, stderr = process.communicate(timeout=1)
             except subprocess.TimeoutExpired:
