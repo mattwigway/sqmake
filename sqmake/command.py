@@ -17,6 +17,7 @@ import tqdm
 import pandas as pd
 import subprocess
 import sqlalchemy as sq
+import os
 
 LOG = getLogger(__name__)
 
@@ -29,7 +30,7 @@ class Command(object):
         else:
             self.code = code
 
-    def run (self, engine):
+    def run (self, engine, constring, schema):
         pass # abstract
 
     @staticmethod
@@ -53,7 +54,7 @@ class SqlCommand(Command):
     def __init__ (self, fn, code):
         super().__init__(fn, code)
 
-    def run (self, engine):
+    def run (self, engine, constring, schema):
         LOG.info(f'sql> {self.code}')
         with engine.begin() as con:
             con.execute(self.code)
@@ -62,10 +63,11 @@ class ShellCommand(Command):
     def __init__ (self, fn, code):
         super().__init__(fn, code)
 
-    def run (self, engine):
+    def run (self, engine, constring, schema):
         LOG.info(f'sh> {self.code}')
         # TODO how to handle working directory for this process?
-        process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
 
         while True:
             retcode = process.poll()
@@ -90,7 +92,7 @@ class DataCommand(Command):
         self.cleanup_code = cleanup_code
         self.table = table
 
-    def run (self, engine):
+    def run (self, engine, constring, schema):
         with engine.begin() as conn:
             meta = sq.MetaData(conn)
 

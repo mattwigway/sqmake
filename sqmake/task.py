@@ -33,9 +33,9 @@ class Task(object):
         metadata.reflect(bind=engine, schema=schema)
         return all([output.exists(metadata) for output in self.outputs])
 
-    def run (self, engine):
+    def run (self, engine, constring, schema):
         for cmd in self.commands:
-            cmd.run(engine)
+            cmd.run(engine, constring, schema)
 
     @staticmethod
     def from_yaml(yaml):

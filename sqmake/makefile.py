@@ -68,7 +68,7 @@ class Makefile(object):
             for dependency in task.depends_on:
                 self.run(dependency, engine=engine)
 
-            task.run(engine)
+            task.run(engine, self.db, self.schema)
 
             if not task.metatask() and not task.exists(engine, self.schema):
                 raise TaskFailedError(f'task {task_name} did not produce required outputs')
