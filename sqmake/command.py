@@ -70,7 +70,7 @@ class ShellCommand(Command):
         LOG.info(f'sh> {self.code}')
         # TODO how to handle working directory for this process?
         shell = None
-        if platform.system() == "Windows" and not self.wsl:
+        if platform.system() == "Windows" and self.wsl:
             # Windows, use WSL bash so that normal shell stuff works
             # TODO should we just use this codepath on all platforms so that bash is always
             # the shell that gets used?
