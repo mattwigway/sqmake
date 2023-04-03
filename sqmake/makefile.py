@@ -82,9 +82,9 @@ class Makefile(object):
 
         makefile = Makefile(echo=echo)
         if dbname:
-            parsed["db"] = dbname
+            makefile.db = dbname
         else:
-            parsed['db'] if 'db' in parsed else None
+            makefile.db = parsed['db'] if 'db' in parsed else None
         makefile.schema = parsed['schema'] if 'schema' in parsed else None
         if 'tasks' in parsed:
             for task in parsed['tasks']:
