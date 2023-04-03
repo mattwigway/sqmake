@@ -15,5 +15,5 @@ def main():
     rootLogger.setLevel(logging.INFO)
     rootLogger.addHandler(logging.StreamHandler())
 
-    makefile = Makefile.from_yaml(args.sqmakefile, dbname=args["database"], echo=args.echo)
+    makefile = Makefile.from_yaml(args.sqmakefile, dbname=args.database, echo=args.echo)
     makefile.run(args.task)
