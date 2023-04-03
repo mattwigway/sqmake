@@ -56,22 +56,23 @@ class Makefile(object):
             # don't call _add_task because it checks for slashes
             self.tasks[f'{namespace}/{task_name}'] = task
 
-    def run (self, task_name, engine=None):
+    def run (self, task_name, engine=None, cache_dir=os.getcwd()):
         if engine is None:
             engine = sq.create_engine(self.db, echo=self.echo)
 
         task = self.tasks[task_name]
         # check if task needs to be run
         if task.metatask() or not task.exists(engine, self.schema):
-            LOG.info(f'running task {task_name}')
-            LOG.info('checking dependencies')
-            for dependency in task.depends_on:
-                self.run(dependency, engine=engine)
+            with withdir(cache_dir):
+                LOG.info(f'running task {task_name}')
+                LOG.info('checking dependencies')
+                for dependency in task.depends_on:
+                    self.run(dependency, engine=engine)
 
-            task.run(engine, self.db, self.schema)
+                task.run(engine, self.db, self.schema)
 
-            if not task.metatask() and not task.exists(engine, self.schema):
-                raise TaskFailedError(f'task {task_name} did not produce required outputs')
+                if not task.metatask() and not task.exists(engine, self.schema):
+                    raise TaskFailedError(f'task {task_name} did not produce required outputs')
         else:
             LOG.info(f'{task_name} already complete, skipping')
 
