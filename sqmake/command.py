@@ -41,7 +41,7 @@ class Command(object):
         fn = yaml['file'] if 'file' in yaml else None
         code = yaml['code'] if 'code' in yaml else None
         if yaml['type'] == 'sql':
-            return SqlCommand(fn, code)
+            return SqlCommand(fn, code, yaml["wsl"] if "wsl" in yaml else True)
         elif yaml['type'] == 'sh':
             return ShellCommand(fn, code)
         elif yaml['type'] == 'data':
@@ -62,15 +62,16 @@ class SqlCommand(Command):
             con.execute(sq.text(self.code))
 
 class ShellCommand(Command):
-    def __init__ (self, fn, code):
+    def __init__ (self, fn, code, wsl):
         super().__init__(fn, code)
+        self.wsl = wsl
 
     def run (self, engine, constring, schema):
         LOG.info(f'sh> {self.code}')
         # TODO how to handle working directory for this process?
         shell = None
-        if platform.system() == "Windows":
-            # Windows, use git-bash so that normal shell stuff works
+        if platform.system() == "Windows" and not self.wsl:
+            # Windows, use WSL bash so that normal shell stuff works
             # TODO should we just use this codepath on all platforms so that bash is always
             # the shell that gets used?
             process = subprocess.Popen(["bash", "-c", self.code], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
