@@ -57,7 +57,7 @@ class SqlCommand(Command):
     def run (self, engine, constring, schema):
         LOG.info(f'sql> {self.code}')
         with engine.begin() as con:
-            con.execute(self.code)
+            con.execute(sq.text(self.code))
 
 class ShellCommand(Command):
     def __init__ (self, fn, code):
