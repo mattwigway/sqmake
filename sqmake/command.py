@@ -70,11 +70,15 @@ class ShellCommand(Command):
         # TODO how to handle working directory for this process?
         shell = None
         if platform.system() == "Windows":
-            # always run commands in a Unix shell, find git bash on Windows
-            shell = shutil.which("bash")
-        
-        process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema}, executable=shell)
+            # Windows, use git-bash so that normal shell stuff works
+            # TODO should we just use this codepath on all platforms so that bash is always
+            # the shell that gets used?
+            process = subprocess.Popen(["bash", "-c", self.code], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
+        else:
+            # POSIX system, use default shell
+            process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
 
         while True:
             retcode = process.poll()
