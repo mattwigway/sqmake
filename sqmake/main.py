@@ -7,7 +7,7 @@ def main():
     parser.add_argument('task')
     parser.add_argument('--sqmakefile', default='sqmake.yml', help='Path to SQMake file (default: sqmake.yml)')
     parser.add_argument('--echo', action='store_true', help='echo SQL commands')
-    parser.add_argument
+    parser.add_argument('--database', help="Database to use (if not specified in sqmakefile)")
     args = parser.parse_args()
 
     # set up logging
@@ -15,5 +15,5 @@ def main():
     rootLogger.setLevel(logging.INFO)
     rootLogger.addHandler(logging.StreamHandler())
 
-    makefile = Makefile.from_yaml(args.sqmakefile, echo=args.echo)
+    makefile = Makefile.from_yaml(args.sqmakefile, dbname=args["database"], echo=args.echo)
     makefile.run(args.task)

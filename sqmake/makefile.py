@@ -76,12 +76,15 @@ class Makefile(object):
             LOG.info(f'{task_name} already complete, skipping')
 
     @staticmethod
-    def from_yaml (filename, echo=False):
+    def from_yaml (filename, dbname=None, echo=False):
         with open(filename) as inf:
             parsed = yaml.safe_load(inf)
 
         makefile = Makefile(echo=echo)
-        makefile.db = parsed['db'] if 'db' in parsed else None
+        if dbname:
+            parsed["db"] = dbname
+        else:
+            parsed['db'] if 'db' in parsed else None
         makefile.schema = parsed['schema'] if 'schema' in parsed else None
         if 'tasks' in parsed:
             for task in parsed['tasks']:
