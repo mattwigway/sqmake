@@ -41,9 +41,9 @@ class Command(object):
         fn = yaml['file'] if 'file' in yaml else None
         code = yaml['code'] if 'code' in yaml else None
         if yaml['type'] == 'sql':
-            return SqlCommand(fn, code, yaml["wsl"] if "wsl" in yaml else True)
+            return SqlCommand(fn, code)
         elif yaml['type'] == 'sh':
-            return ShellCommand(fn, code)
+            return ShellCommand(fn, code, yaml["wsl"] if "wsl" in yaml else True)
         elif yaml['type'] == 'data':
             init_code = yaml['init_code'] if 'init_code' in yaml else None
             table = yaml['table'] if 'table' in yaml else None
