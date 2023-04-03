@@ -18,6 +18,8 @@ import pandas as pd
 import subprocess
 import sqlalchemy as sq
 import os
+import platform
+import shutil
 
 LOG = getLogger(__name__)
 
@@ -66,8 +68,13 @@ class ShellCommand(Command):
     def run (self, engine, constring, schema):
         LOG.info(f'sh> {self.code}')
         # TODO how to handle working directory for this process?
+        shell = None
+        if platform.system() == "Windows":
+            # always run commands in a Unix shell, find git bash on Windows
+            shell = shutil.which("bash")
+        
         process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
+            env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema}, executable=shell)
 
         while True:
             retcode = process.poll()
