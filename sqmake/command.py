@@ -20,6 +20,7 @@ import sqlalchemy as sq
 import os
 import platform
 import shutil
+import re
 
 LOG = getLogger(__name__)
 
@@ -69,14 +70,28 @@ class ShellCommand(Command):
     def run (self, engine, constring, schema):
         LOG.info(f'sh> {self.code}')
         # TODO how to handle working directory for this process?
+
+        # set environment vars for subprocess. can't do this in Popen because for
+        # windows we expand prior to execution, and os.path.expandvars doesn't have an
+        # option to set environment variables
+        os.environ["SQMAKE_DB"] = constring
+        os.environ["SQMAKE_SCHEMA"] = schema
+
+        # some commands use non-standard connection strings. Parse the connection string for them.
+        m = re.match("^postgresql://([^:]*?)?:?([^@]*?)?@?(.+)/(.+)$", constring)
+
+        if m:
+            os.environ["SQMAKE_USER"] = m[1]
+            os.environ["SQMAKE_PASSWORD"] = m[2]
+            os.environ["SQMAKE_HOST"] = m[3]
+            os.environ["SQMAKE_DBNAME"] = m[4]
+
         if not self.system_shell:
             # Use bash if system shell not specifically requested
             process = subprocess.Popen(["bash", "-c", self.code], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
         else:
-            # Use default shell. Expand environment variables first so this works on windows as well
-            os.environ["SQMAKE_DB"] = constring
-            os.environ["SQMAKE_SCHEMA"] = schema
+            # Use default shell. Expand environment variables first so this works on windows as well\
             expanded_code = os.path.expandvars(self.code)
 
             process = subprocess.Popen(expanded_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
