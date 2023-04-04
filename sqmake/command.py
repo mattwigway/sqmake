@@ -121,12 +121,12 @@ class DataCommand(Command):
 
     def run (self, engine, constring, schema):
         with engine.begin() as conn:
-            meta = sq.MetaData()
-            meta.reflect(bind=conn)
-
             if self.init_code is not None:
                 LOG.info(f'sql> {self.init_code}')
                 conn.execute(sq.text(self.init_code))
+
+            meta = sq.MetaData()
+            meta.reflect(bind=conn)
 
             total_rows = None # unknown total rows
             if self.fn.lower().endswith('.csv'):
