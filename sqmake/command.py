@@ -125,7 +125,7 @@ class DataCommand(Command):
                 LOG.info(f'sql> {self.init_code}')
                 conn.execute(sq.text(self.init_code))
 
-            meta = sq.MetaData()
+            meta = sq.MetaData(schema=schema)
             meta.reflect(bind=conn)
 
             total_rows = None # unknown total rows
