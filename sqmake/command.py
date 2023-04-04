@@ -128,12 +128,6 @@ class DataCommand(Command):
                 LOG.info(f'sql> {self.init_code}')
                 conn.execute(sq.text(self.init_code))
 
-            if '.' in self.table:  # TODO this fails with complex table names that contain periods. Let's assume no one does that.
-                schema, table = self.table.split('.')
-            else:
-                table = self.table
-                schema = None
-
             total_rows = None # unknown total rows
             if self.fn.lower().endswith('.csv'):
                 with open(self.fn) as s:
@@ -153,7 +147,7 @@ class DataCommand(Command):
                 for chunk in chunk_source:
                     chunk.columns = [c.lower() for c in chunk.columns]
                     vals = list([t._asdict() for t in chunk.itertuples(index=False)])
-                    conn.execute(sq.insert(sq.Table(table, meta, autoload=True, schema=schema)), vals)
+                    conn.execute(sq.insert(meta.tables[self.table]), vals)
                     pbar.update(len(chunk))
 
             if self.cleanup_code is not None:
