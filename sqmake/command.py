@@ -126,7 +126,7 @@ class DataCommand(Command):
 
             if self.init_code is not None:
                 LOG.info(f'sql> {self.init_code}')
-                conn.execute(self.init_code)
+                conn.execute(sq.text(self.init_code))
 
             if '.' in self.table:  # TODO this fails with complex table names that contain periods. Let's assume no one does that.
                 schema, table = self.table.split('.')
@@ -158,7 +158,7 @@ class DataCommand(Command):
 
             if self.cleanup_code is not None:
                 LOG.info(f'sql> {self.cleanup_code}')
-                conn.execute(self.cleanup_code)
+                conn.execute(sq.text(self.cleanup_code))
 
 
 class CommandFailedError(Exception):
