@@ -78,7 +78,7 @@ class ShellCommand(Command):
         os.environ["SQMAKE_SCHEMA"] = schema
 
         # some commands use non-standard connection strings. Parse the connection string for them.
-        m = re.match("^postgresql://([^:]*?)?:?([^@]*?)?@?(.+)/(.+)$", constring)
+        m = re.match("^postgresql://([^@:]*?)?:?([^@:]*?)?@?([^:@]+)/(.+)$", constring)
 
         if m:
             os.environ["SQMAKE_USER"] = m[1]
