@@ -121,7 +121,8 @@ class DataCommand(Command):
 
     def run (self, engine, constring, schema):
         with engine.begin() as conn:
-            meta = sq.MetaData(conn)
+            meta = sq.MetaData()
+            meta.reflect(bind=conn)
 
             if self.init_code is not None:
                 LOG.info(f'sql> {self.init_code}')
