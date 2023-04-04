@@ -43,7 +43,7 @@ class Command(object):
         if yaml['type'] == 'sql':
             return SqlCommand(fn, code)
         elif yaml['type'] == 'sh':
-            return ShellCommand(fn, code, yaml["wsl"] if "wsl" in yaml else True)
+            return ShellCommand(fn, code, yaml["system_shell"] if "system_shell" in yaml else False)
         elif yaml['type'] == 'data':
             init_code = yaml['init_code'] if 'init_code' in yaml else None
             table = yaml['table'] if 'table' in yaml else None
@@ -62,24 +62,24 @@ class SqlCommand(Command):
             con.execute(sq.text(self.code))
 
 class ShellCommand(Command):
-    def __init__ (self, fn, code, wsl):
+    def __init__ (self, fn, code, system_shell):
         super().__init__(fn, code)
-        self.wsl = wsl
+        self.system_shell = system_shell
 
     def run (self, engine, constring, schema):
         LOG.info(f'sh> {self.code}')
         # TODO how to handle working directory for this process?
-        shell = None
-        if platform.system() == "Windows" and self.wsl:
-            # Windows, use WSL bash so that normal shell stuff works
-            # TODO should we just use this codepath on all platforms so that bash is always
-            # the shell that gets used?
+        if not self.system_shell:
+            # Use bash if system shell not specifically requested
             process = subprocess.Popen(["bash", "-c", self.code], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
         else:
-            # POSIX system, use default shell
-            process = subprocess.Popen(self.code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                env={**os.environ, 'SQMAKE_DB': constring, 'SQMAKE_SCHEMA': schema})
+            # Use default shell. Expand environment variables first so this works on windows as well
+            os.environ["SQMAKE_DB"] = constring
+            os.environ["SQMAKE_SCHEMA"] = schema
+            expanded_code = os.path.expandvars(self.code)
+
+            process = subprocess.Popen(expanded_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         while True:
             retcode = process.poll()
